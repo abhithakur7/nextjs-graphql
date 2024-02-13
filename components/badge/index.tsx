@@ -5,6 +5,8 @@ import { useMutation } from "@apollo/client";
 import { UPDATE_USER, DELETE_USER } from "@/lib/queries";
 import { Button } from "../ui/button";
 import { toast } from "../ui/use-toast";
+import { useCallback, useEffect, useState } from "react";
+import { deleteObjectURL, getObjectURL } from "@/lib/actions";
 
 const Badge = ({
   user,
@@ -15,6 +17,7 @@ const Badge = ({
 }) => {
   const [updateUser] = useMutation(UPDATE_USER);
   const [deleteUser] = useMutation(DELETE_USER);
+  const [profile, setProfile] = useState<string | null>(null);
 
   const updateActiveStatus = async () => {
     try {
@@ -35,31 +38,52 @@ const Badge = ({
 
   const deleteSelectedUser = async () => {
     try {
-      await deleteUser({
-        variables: {
-          id: user?.id,
-        },
-      });
-      toast({
-        title: "Success",
-        description: "User deleted successfully",
-      });
-      refetch();
+      if (user) {
+        await deleteObjectURL(user.profile as string);
+        await deleteUser({
+          variables: {
+            id: user.id,
+          },
+        });
+        toast({
+          title: "Success",
+          description: "User deleted successfully",
+        });
+        refetch();
+      }
     } catch (error) {
       throw new Error("Failed to delete user");
     }
   };
+
+  const handleProfile = useCallback(async () => {
+    try {
+      const { success } = await getObjectURL(user.profile as string);
+      if (success) {
+        setProfile(success.url);
+      }
+    } catch (error) {
+      setProfile(null);
+    }
+  }, [user.profile]);
+
+  useEffect(() => {
+    if (user && user.profile) {
+      handleProfile();
+    }
+  }, [handleProfile, user]);
 
   return (
     <div className="w-full flex flex-row items-center justify-between bg-slate-100 p-4">
       <div className="w-full flex flex-row gap-2">
         <div className="border border-slate-400 items-center flex p-2 h-10 w-10 rounded-full bg-white">
           <Image
-            src="/next.svg"
+            src={profile ?? "/next.svg"}
             alt="user-logo"
             width={20}
             height={20}
             className="rounded-full"
+            objectFit="cover"
           />
         </div>
         <div className="w-full flex flex-col gap-1 flex-wrap">

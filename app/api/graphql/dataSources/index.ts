@@ -4,10 +4,12 @@ import UserModel from "../models/user";
 
 interface UserDocument {
   _id: ObjectId;
-  username: string;
-  password: string;
+  first_name: string;
+  last_name: string;
   email: string;
-  interests: [string];
+  age: number;
+  active: boolean;
+  profile: string;
 }
 
 export default class Users extends MongoDataSource<UserDocument> {

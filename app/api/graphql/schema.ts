@@ -6,6 +6,7 @@ const typeDefs = `#graphql
         email: String!
         age: Int!
         active: Boolean
+        profile: String!
     }
 
     input UserInput {
@@ -13,6 +14,7 @@ const typeDefs = `#graphql
         last_name: String!
         email: String!
         age: Int!
+        profile: String!
     }
 
     input UpdateUserInput {
@@ -22,6 +24,7 @@ const typeDefs = `#graphql
         email: String
         age: Int
         active: Boolean
+        profile: String!
   }
 
     type Query {

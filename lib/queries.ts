@@ -9,6 +9,7 @@ export const FETCH_USERS = gql`
       first_name
       last_name
       active
+      profile
     }
   }
 `;
@@ -22,6 +23,7 @@ export const CREATE_USER = gql`
       first_name
       id
       last_name
+      profile
     }
   }
 `;
@@ -35,6 +37,7 @@ export const UPDATE_USER = gql`
       id
       first_name
       last_name
+      profile
     }
   }
 `;

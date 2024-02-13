@@ -17,6 +17,10 @@ const userSchema = new Schema({
     type: String,
     required: [true, "All fields are required"],
   },
+  profile: {
+    type: String,
+    required: [true, "All fields are required"],
+  },
   active: Boolean,
 });
 

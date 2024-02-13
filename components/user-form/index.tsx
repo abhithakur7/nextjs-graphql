@@ -16,6 +16,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button } from "../ui/button";
 import { toast } from "../ui/use-toast";
+import { useState } from "react";
+import Image from "next/image";
+import { putObjectURL } from "@/lib/actions";
+import { generateFileName } from "@/lib/utils";
 
 const formSchema = z.object({
   first_name: z.string().min(1, {
@@ -34,6 +38,9 @@ const formSchema = z.object({
 });
 
 const UserForm = ({ refetch }: any) => {
+  const [file, setFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     mode: "onChange",
@@ -49,22 +56,62 @@ const UserForm = ({ refetch }: any) => {
 
   const [createUser] = useMutation(CREATE_USER);
 
-  const onSubmit = async (data: z.infer<typeof formSchema>) => {
-    const { age, first_name, last_name, email } = data || {};
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0] ?? null;
+    setFile(selectedFile);
 
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    console.log(selectedFile);
+    if (selectedFile) {
+      const url = URL.createObjectURL(selectedFile);
+      setPreviewUrl(url);
+    } else {
+      setPreviewUrl(null);
+    }
+  };
+
+  const onSubmit = async (data: z.infer<typeof formSchema>) => {
     try {
-      await createUser({
-        variables: {
-          input: { age: Number(age), first_name, last_name, email },
-        },
-      });
-      toast({
-        title: "Success",
-        description: "User created successfully",
-      });
-      refetch();
-      form.reset();
+      if (file) {
+        const { age, first_name, last_name, email } = data || {};
+        const filename = generateFileName();
+        const { success, failure } = await putObjectURL({
+          key: filename,
+          fileSize: file.size,
+          fileType: file.type,
+        });
+
+        if (failure) return console.log(failure);
+
+        if (success) {
+          const response = await fetch(success.url, {
+            method: "PUT",
+            headers: {
+              "Content-Type": file.type,
+            },
+            body: file,
+          });
+          await createUser({
+            variables: {
+              input: {
+                age: Number(age),
+                first_name,
+                last_name,
+                email,
+                profile: filename,
+              },
+            },
+          });
+          toast({
+            title: "Success",
+            description: "User created successfully",
+          });
+          refetch();
+          form.reset();
+        }
+      }
     } catch (error) {
+      console.log(error);
       throw new Error("Failed to create user");
     }
   };
@@ -124,6 +171,35 @@ const UserForm = ({ refetch }: any) => {
             </FormItem>
           )}
         />
+        {previewUrl && file ? (
+          <div className="relative pt-4">
+            <Image
+              src={previewUrl}
+              alt="logo"
+              width={"40"}
+              height={"40"}
+              layout=""
+              style={{ width: "100%", height: "auto" }}
+            />
+            <Button
+              onClick={() => {
+                setFile(null);
+                setPreviewUrl(null);
+              }}
+              size={"icon"}
+              className="rounded-full absolute top-1 right-[-10px]"
+            >
+              x
+            </Button>
+          </div>
+        ) : (
+          <FormItem>
+            <FormLabel htmlFor="profile">Profile Pic</FormLabel>
+            <FormControl>
+              <Input type="file" name="profile" onChange={handleImageChange} />
+            </FormControl>
+          </FormItem>
+        )}
         <Button type="submit">Submit</Button>
       </form>
     </Form>
