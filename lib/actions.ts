@@ -72,5 +72,6 @@ export async function deleteObjectURL(key: string) {
     Key: key,
   });
 
-  await getSignedUrl(s3Client, command);
+  const url = await getSignedUrl(s3Client, command);
+  return { success: { url } };
 }

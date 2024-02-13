@@ -39,7 +39,10 @@ const Badge = ({
   const deleteSelectedUser = async () => {
     try {
       if (user) {
-        await deleteObjectURL(user.profile as string);
+        const { success } = await deleteObjectURL(user.profile as string);
+        await fetch(success.url, {
+          method: "DELETE",
+        });
         await deleteUser({
           variables: {
             id: user.id,
@@ -76,14 +79,13 @@ const Badge = ({
   return (
     <div className="w-full flex flex-row items-center justify-between bg-slate-100 p-4">
       <div className="w-full flex flex-row gap-2">
-        <div className="border border-slate-400 items-center flex p-2 h-10 w-10 rounded-full bg-white">
+        <div className="border border-slate-400 items-center p-0 flex h-10 w-10 rounded-full bg-white">
           <Image
             src={profile ?? "/next.svg"}
             alt="user-logo"
-            width={20}
-            height={20}
             className="rounded-full"
-            objectFit="cover"
+            width={40}
+            height={40}
           />
         </div>
         <div className="w-full flex flex-col gap-1 flex-wrap">

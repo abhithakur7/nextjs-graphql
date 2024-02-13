@@ -84,7 +84,7 @@ const UserForm = ({ refetch }: any) => {
         if (failure) return console.log(failure);
 
         if (success) {
-          const response = await fetch(success.url, {
+          await fetch(success.url, {
             method: "PUT",
             headers: {
               "Content-Type": file.type,
@@ -108,6 +108,8 @@ const UserForm = ({ refetch }: any) => {
           });
           refetch();
           form.reset();
+          setPreviewUrl(null);
+          setFile(null);
         }
       }
     } catch (error) {
